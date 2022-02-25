@@ -5,6 +5,7 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 import ru.vsu.cs.PoryadinAV.utils.SwingUtils;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -22,6 +23,7 @@ public class PolygonFrame extends JFrame {
     private JButton buttonLoadPolygon;
     private JLabel labelArea;
     private JLabel labelPerimeter;
+    private JButton buttonCalculateRectangleDescribingThisPolygon;
 
     private JFileChooser fileChooserOpen;
     private JFileChooser fileChooserSave;
@@ -67,14 +69,8 @@ public class PolygonFrame extends JFrame {
 
         buttonLoadPolygon.addActionListener(e -> {
             if (fileChooserOpen.showOpenDialog(panelMain) == JFileChooser.APPROVE_OPTION) {
-                try {
-                    polygon = Main.readPolygonFromFile(fileChooserOpen.getSelectedFile().getPath());
-                    polygonGraphics.drawPolygon(polygon, g2d);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-
-                labelImg.setIcon(new ImageIcon(img));
+                polygon = Main.readPolygonFromFile(fileChooserOpen.getSelectedFile().getPath());
+                update();
 
                 labelArea.setText("Площадь фигуры: " + String.format("%.3f", polygon.getArea()));
                 labelPerimeter.setText("Периметр фигуры: " + String.format("%.3f", polygon.getPerimeter()));
@@ -99,6 +95,17 @@ public class PolygonFrame extends JFrame {
                     ex.printStackTrace();
                 }
             }
+        });
+
+        buttonCalculateRectangleDescribingThisPolygon.addActionListener(e -> {
+            try {
+                Polygon rectangleDescribingThisPolygon = polygon.calculateRectangleDescribingThisPolygon();
+                polygonGraphics.drawPolygon(rectangleDescribingThisPolygon, g2d);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+
+            labelImg.setIcon(new ImageIcon(img));
         });
 
         KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
@@ -133,6 +140,9 @@ public class PolygonFrame extends JFrame {
 
     private void update() {
         try {
+            Image srcImage = ImageIO.read(new File("./CoordPlosk.png"));
+            g2d.setColor(Color.BLACK);
+            g2d.drawImage(srcImage, 0, 0, null);
             polygonGraphics.drawPolygon(polygon, g2d);
         } catch (IOException ex) {
             ex.printStackTrace();
